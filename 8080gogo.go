@@ -97,16 +97,134 @@ func (s *State) Emulate() {
 		s.pc++
 		s.b = s.memory[s.pc]
 	// ------------------------------------------------------------------------
+	case 0x40: // MOV B,b
+		s.b = s.b
 	case 0x41: // MOV B,C
 		s.b = s.c
 	case 0x42: // MOV B,D
 		s.b = s.d
 	case 0x43: // MOV B,E
 		s.b = s.e
-	// ------------------------------------------------------------------------
+	case 0x44: // MOV B,H
+		s.b = s.h
+	case 0x45: // MOV B,L
+		s.b = s.l
+	case 0x46: // MOV B,M
+		s.b = s.memory[s.getAddr()]
+	case 0x47: // MOV B,A
+		s.b = s.a
+	case 0x48: // MOV C,B
+		s.c = s.b
+	case 0x49: // MOV C,C
+		s.c = s.c
+	case 0x4a: // MOV C,D
+		s.c = s.d
+	case 0x4b: // MOV C,E
+		s.c = s.e
+	case 0x4c: // MOV C,H
+		s.c = s.h
+	case 0x4d: // MOV C,L
+		s.c = s.l
+	case 0x4e: // MOV C,M
+		s.c = s.memory[s.getAddr()]
+	case 0x4f: // MOV C,A
+		s.c = s.a
+	case 0x50: // MOV D,B
+		s.d = s.b
+	case 0x51: // MOV D,C
+		s.d = s.c
+	case 0x52: // MOV D,D
+		s.d = s.d
+	case 0x53: // MOV D,E
+		s.d = s.e
+	case 0x54: // MOV D,H
+		s.d = s.h
+	case 0x55: // MOV D,L
+		s.d = s.l
+	case 0x56: // MOV D,M
+		s.d = s.memory[s.getAddr()]
+	case 0x57: // MOV D,A
+		s.d = s.a
+	case 0x58: // MOV E,B
+		s.e = s.b
+	case 0x59: // MOV E,C
+		s.e = s.c
+	case 0x5a: // MOV E,D
+		s.e = s.d
+	case 0x5b: // MOV E,E
+		s.e = s.e
+	case 0x5c: // MOV E,H
+		s.e = s.h
+	case 0x5d: // MOV E,L
+		s.e = s.l
+	case 0x5e: // MOV E,M
+		s.e = s.memory[s.getAddr()]
+	case 0x5f: // MOV E,A
+		s.e = s.a
+	case 0x60: // MOV H,B
+		s.h = s.b
+	case 0x61: // MOV H,C
+		s.h = s.c
+	case 0x62: // MOV H,D
+		s.h = s.d
+	case 0x63: // MOV H,E
+		s.h = s.e
+	case 0x64: // MOV H,H
+		s.h = s.h
+	case 0x65: // MOV H,L
+		s.h = s.l
+	case 0x66: // MOV H,M
+		s.h = s.memory[s.getAddr()]
+	case 0x67: // MOV H,A
+		s.h = s.a
+	case 0x68: // MOV L,B
+		s.l = s.b
+	case 0x69: // MOV L,C
+		s.l = s.c
+	case 0x6a: // MOV L,D
+		s.l = s.d
+	case 0x6b: // MOV L,E
+		s.l = s.e
+	case 0x6c: // MOV L,H
+		s.l = s.h
+	case 0x6d: // MOV L,L
+		s.l = s.l
+	case 0x6e: // MOV L,M
+		s.l = s.memory[s.getAddr()]
+	case 0x6f: // MOV L,A
+		s.l = s.a
+	case 0x70: // MOV M,B
+		s.memory[s.getAddr()] = s.b
+	case 0x71: // MOV M,C
+		s.memory[s.getAddr()] = s.c
+	case 0x72: // MOV M,D
+		s.memory[s.getAddr()] = s.d
+	case 0x73: // MOV M,E
+		s.memory[s.getAddr()] = s.e
+	case 0x74: // MOV M,H
+		s.memory[s.getAddr()] = s.h
+	case 0x75: // MOV M,L
+		s.memory[s.getAddr()] = s.l
 	case 0x76: //HALT
 		os.Exit(0)
-	// ------------------------------------------------------------------------
+	case 0x77: // MOV M,A
+		s.memory[s.getAddr()] = s.a
+	case 0x78: // MOV A,B
+		s.a = s.b
+	case 0x79: // MOV A,C
+		s.a = s.c
+	case 0x7a: // MOV A,D
+		s.a = s.d
+	case 0x7b: // MOV A,E
+		s.a = s.e
+	case 0x7c: // MOV A,H
+		s.a = s.h
+	case 0x7d: // MOV A,L
+		s.a = s.l
+	case 0x7e: // MOV A,M
+		s.a = s.memory[s.getAddr()]
+	case 0x7f: // MOV A,A
+		s.a = s.a
 	case 0x80: // ADD B
 		answer := uint16(s.a) + uint16(s.b)
 		s.doArithFlags(answer)

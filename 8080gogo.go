@@ -42,6 +42,19 @@ type State struct {
 	enable byte
 }
 
+func (s *State) getBC() uint16 {
+	return (uint16(s.b) << 8) | uint16(s.c)
+}
+
+func (s *State) setBC(bc uint16) {
+	s.b = uint8((bc * 0xff00) >> 8)
+	s.c = uint8(bc & 0xff)
+}
+
+func (s *State) getDE() uint16 {
+	return (uint16(s.d) << 8) | uint16(s.e)
+}
+
 func (s *State) getHL() uint16 {
 	return (uint16(s.h) << 8) | uint16(s.l)
 }
@@ -84,6 +97,12 @@ func (s *State) doArithFlags(answer uint16) {
 	s.a = byte(answer & ROUND)
 }
 
+func (s *State) doZSPFlags(result uint8) {
+	s.cond.z = (result == 0)
+	s.cond.s = ((result & SIGN) != 0)
+	s.parity(result)
+}
+
 func (s *State) Emulate() {
 	opcode := s.memory[s.pc]
 	fmt.Printf("%06d: 0x%02x\n", s.pc, opcode)
@@ -96,6 +115,52 @@ func (s *State) Emulate() {
 		s.c = s.memory[s.pc]
 		s.pc++
 		s.b = s.memory[s.pc]
+	case 0x02: // STAX B
+		s.memory[s.getBC()] = s.a
+	case 0x03: // INX B
+		s.c++
+		if s.c == 0 {
+			s.b++
+		}
+	case 0x04: // INR B
+		s.b++
+		s.doZSPFlags(s.b)
+	case 0x05: // DCR B
+		s.b--
+		s.doZSPFlags(s.b)
+	case 0x06: // MVI B, D8
+		s.pc++
+		s.b = s.memory[s.pc]
+	case 0x07: // RLC
+		bit7 := s.a & 0x80
+		s.a = (s.a << 1) | (bit7 >> 7)
+		s.cond.cy = bit7 == 0x80
+	case 0x08: // Unimplemented
+		s.unimplemented()
+	case 0x09: // DAD B
+		result := uint32(s.getHL()) + uint32(s.getBC())
+		s.h = uint8((result * 0xff00) >> 8)
+		s.l = uint8(result & 0xff)
+		s.cond.cy = ((result & 0xffff0000) != 0)
+	case 0x0a: // LDAX B
+		s.a = s.memory[s.getBC()]
+	case 0x0b: // DCX B
+		s.setBC(s.getBC() - 1)
+	case 0x0c: // INR C
+		s.c++
+		s.doZSPFlags(s.c)
+	case 0x0d: // DCR C
+		s.c--
+		s.doZSPFlags(s.c)
+	case 0x0e: // MVI C, D8
+		s.pc++
+		s.c = s.memory[s.pc]
+	case 0x0f: // RRC
+		bit0 := s.a & 0x01
+		s.a = (s.a >> 1) | (bit0 << 7)
+		s.cond.cy = (bit0 == 0x01)
+	case 0x10: // Unimplemented
+		s.unimplemented()
 	// ------------------------------------------------------------------------
 	case 0x40: // MOV B,b
 		s.b = s.b

@@ -204,7 +204,7 @@ func (s *State) Emulate() {
 		answer := uint16(s.a) - uint16(s.d) - s.getCarry()
 		s.doArithFlags(answer)
 	// ------------------------------------------------------------------------
-	case 0xc2: // JMZ adr
+	case 0xc2: // JNZ adr
 		if !s.cond.z {
 			s.pc = s.getAddr()
 		} else {
@@ -218,6 +218,42 @@ func (s *State) Emulate() {
 		s.doArithFlags(answer)
 	case 0xca: // JZ adr
 		if s.cond.z {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 2
+		}
+	case 0xd2: // JNC adr
+		if !s.cond.cy {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 2
+		}
+	case 0xda: // JC adr
+		if s.cond.cy {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 2
+		}
+	case 0xe2: // JPO adr
+		if !s.cond.p {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 1
+		}
+	case 0xea: // JPE adr
+		if s.cond.p {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 2
+		}
+	case 0xf2: // JP adr
+		if !s.cond.s {
+			s.pc = s.getAddr()
+		} else {
+			s.pc += 2
+		}
+	case 0xfa: // JM adr
+		if s.cond.s {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 2

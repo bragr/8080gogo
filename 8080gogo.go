@@ -99,7 +99,7 @@ func (s *State) doArithFlags(answer uint16) {
 
 func (s *State) doZSPFlags(result uint8) {
 	s.cond.z = (result == 0)
-	s.cond.s = ((result & SIGN) != 0)
+	s.cond.s = ((result & uint8(SIGN)) != 0)
 	s.parity(result)
 }
 

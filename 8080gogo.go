@@ -55,6 +55,11 @@ func (s *State) getDE() uint16 {
 	return (uint16(s.d) << 8) | uint16(s.e)
 }
 
+func (s *State) setDE(de uint16) {
+	s.e = uint8((de * 0xff00) >> 8)
+	s.d = uint8(de & 0xff)
+}
+
 func (s *State) getHL() uint16 {
 	return (uint16(s.h) << 8) | uint16(s.l)
 }
@@ -161,6 +166,50 @@ func (s *State) Emulate() {
 		s.cond.cy = (bit0 == 0x01)
 	case 0x10: // Unimplemented
 		s.unimplemented()
+	case 0x11: // LXI D, word
+		s.pc++
+		s.e = s.memory[s.pc]
+		s.pc++
+		s.d = s.memory[s.pc]
+	case 0x12: // STAX D
+		s.memory[s.getDE()] = s.a
+	case 0x13: // INX D
+		s.memory[s.getDE()] = s.a
+	case 0x14: // INR D
+		s.d++
+		s.doZSPFlags(s.d)
+	case 0x15: // DCR D
+		s.d--
+		s.doZSPFlags(s.d)
+	case 0x16: // MVI D, D8
+		s.pc++
+		s.d = s.memory[s.pc]
+	case 0x17: // RAL
+		bit7 := s.a & 0x80
+		if s.cond.cy {
+			s.a = s.a | 0x01
+		}
+		s.cond.cy = bit7 == 0x80
+	case 0x18: // Unimplemented
+		s.unimplemented()
+	case 0x19: // DAD D
+		result := uint32(s.getHL()) + uint32(s.getDE())
+		s.h = uint8((result * 0xff00) >> 8)
+		s.l = uint8(result & 0xff)
+		s.cond.cy = ((result & 0xffff0000) != 0)
+	case 0x1a: // LDAX D
+		s.a = s.memory[s.getDE()]
+	case 0x1b: // DCX D
+		s.setDE(s.getDE() - 1)
+	case 0x1c: // INR E
+		s.e++
+		s.doZSPFlags(s.e)
+	case 0x1d: // DCR E
+		s.e--
+		s.doZSPFlags(s.e)
+	case 0x1e: // MVI E,D8
+		s.pc++
+		s.e = s.memory[s.pc]
 	// ------------------------------------------------------------------------
 	case 0x40: // MOV B,b
 		s.b = s.b

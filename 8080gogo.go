@@ -108,7 +108,13 @@ func (s *State) doArithFlags(answer uint16) {
 	s.cond.s = ((answer & SIGN) != 0)
 	s.cond.cy = (answer > CARRY)
 	s.parity(byte(answer))
-	s.a = byte(answer & ROUND)
+}
+
+func (s *State) doLogicFlags() {
+	s.cond.z = (s.a == 0)
+	s.cond.s = ((s.a & uint8(SIGN)) != 0)
+	s.cond.cy = !s.cond.ac
+	s.parity(s.a)
 }
 
 func (s *State) doZSPFlags(result uint8) {
@@ -442,99 +448,223 @@ func (s *State) Emulate() {
 	case 0x80: // ADD B
 		answer := uint16(s.a) + uint16(s.b)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x81: // ADD C
 		answer := uint16(s.a) + uint16(s.c)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x82: // ADD D
 		answer := uint16(s.a) + uint16(s.d)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x83: // ADD E
 		answer := uint16(s.a) + uint16(s.e)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x84: // ADD H
 		answer := uint16(s.a) + uint16(s.h)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x85: // ADD L
 		answer := uint16(s.a) + uint16(s.l)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x86: // ADD M
 		answer := uint16(s.a) + uint16(s.memory[s.getHL()])
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x87: // ADD A
 		answer := uint16(s.a) + uint16(s.a)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x88: // ADC B
 		answer := uint16(s.a) + uint16(s.b) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x89: // ADC C
 		answer := uint16(s.a) + uint16(s.c) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8A: // ADC D
 		answer := uint16(s.a) + uint16(s.d) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8B: // ADC E
 		answer := uint16(s.a) + uint16(s.e) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8C: // ADC H
 		answer := uint16(s.a) + uint16(s.h) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8D: // ADC L
 		answer := uint16(s.a) + uint16(s.l) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8E: // ADC M
 		answer := uint16(s.a) + uint16(s.memory[s.getHL()]) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x8F: // ADC A
 		answer := uint16(s.a) + uint16(s.d) + s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x90: // SUB B
 		answer := uint16(s.a) - uint16(s.b)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x91: // SUB C
 		answer := uint16(s.a) - uint16(s.c)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x92: // SUB D
 		answer := uint16(s.a) - uint16(s.d)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x93: // SUB E
 		answer := uint16(s.a) - uint16(s.e)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x94: // SUB H
 		answer := uint16(s.a) - uint16(s.h)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x95: // SUB L
 		answer := uint16(s.a) - uint16(s.l)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x96: // SUB M
 		answer := uint16(s.a) - uint16(s.memory[s.getHL()])
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x97: // SUB A
 		answer := uint16(s.a) - uint16(s.a)
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x98: // SBB B
 		answer := uint16(s.a) - uint16(s.b) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x99: // SBB C
 		answer := uint16(s.a) - uint16(s.c) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9A: // SBB D
 		answer := uint16(s.a) - uint16(s.d) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9B: // SBB E
 		answer := uint16(s.a) - uint16(s.e) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9C: // SBB H
 		answer := uint16(s.a) - uint16(s.h) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9D: // SBB L
 		answer := uint16(s.a) - uint16(s.l) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9E: // SBB M
 		answer := uint16(s.a) - uint16(s.memory[s.getHL()]) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0x9F: // SBB A
 		answer := uint16(s.a) - uint16(s.d) - s.getCarry()
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
+	case 0xa0: // ANA B
+		s.a = s.a & s.b
+		s.doLogicFlags()
+	case 0xa1: // ANA c
+		s.a = s.a & s.c
+		s.doLogicFlags()
+	case 0xa2: // ANA D
+		s.a = s.a & s.d
+		s.doLogicFlags()
+	case 0xa3: // ANA E
+		s.a = s.a & s.e
+		s.doLogicFlags()
+	case 0xa4: // ANA H
+		s.a = s.a & s.h
+		s.doLogicFlags()
+	case 0xa5: // ANA L
+		s.a = s.a & s.l
+		s.doLogicFlags()
+	case 0xa6: // ANA M
+		s.a = s.a & s.memory[s.getCarry()]
+		s.pc += 2
+		s.doLogicFlags()
+	case 0xa7: // ANA A
+		s.a = s.a & s.a
+		s.doLogicFlags()
+	case 0xa8: // XRA B
+		s.a = s.a ^ s.b
+		s.doLogicFlags()
+	case 0xa9: // XRA C
+		s.a = s.a ^ s.c
+		s.doLogicFlags()
+	case 0xaa: // XRA D
+		s.a = s.a ^ s.d
+		s.doLogicFlags()
+	case 0xab: // XRA E
+		s.a = s.a ^ s.e
+		s.doLogicFlags()
+	case 0xac: // XRA H
+		s.a = s.a ^ s.h
+		s.doLogicFlags()
+	case 0xad: // XRA l
+		s.a = s.a ^ s.l
+		s.doLogicFlags()
+	case 0xae: // XRA M
+		s.a = s.a ^ s.memory[s.getAddr()]
+		s.pc += 2
+		s.doLogicFlags()
+	case 0xaf: // XRA A
+		s.a = s.a ^ s.a
+		s.doLogicFlags()
+	case 0xb0: // ORA B
+		s.a = s.a | s.b
+		s.doLogicFlags()
+	case 0xb1: // ORA C
+		s.a = s.a | s.c
+		s.doLogicFlags()
+	case 0xb2: // ORA D
+		s.a = s.a | s.d
+		s.doLogicFlags()
+	case 0xb3: // ORA E
+		s.a = s.a | s.e
+		s.doLogicFlags()
+	case 0xb4: // ORA H
+		s.a = s.a | s.h
+		s.doLogicFlags()
+	case 0xb5: // ORA L
+		s.a = s.a | s.l
+		s.doLogicFlags()
+	case 0xb6: // ORA M
+		s.a = s.a | s.memory[s.getAddr()]
+		s.pc += 2
+		s.doLogicFlags()
+	case 0xb7: // ORA a
+		s.a = s.a | s.a
+		s.doLogicFlags()
+	case 0xb8: // CMP B
+		s.doArithFlags(uint16(s.a) - uint16(s.b))
+	case 0xb9: // CMP C
+		s.doArithFlags(uint16(s.a) - uint16(s.c))
+	case 0xba: // CMP D
+		s.doArithFlags(uint16(s.a) - uint16(s.d))
+	case 0xbb: // CMP E
+		s.doArithFlags(uint16(s.a) - uint16(s.e))
+	case 0xbc: // CMP H
+		s.doArithFlags(uint16(s.a) - uint16(s.h))
+	case 0xbd: // CMP L
+		s.doArithFlags(uint16(s.a) - uint16(s.l))
+	case 0xbe: // CMP M
+		s.doArithFlags(uint16(s.a) - uint16(s.memory[s.getAddr()]))
+		s.pc += 2
+	case 0xbf: // CMP A
+		s.doArithFlags(uint16(s.a) - uint16(s.a))
 	// ------------------------------------------------------------------------
 	case 0xc2: // JNZ adr
 		if !s.cond.z {
@@ -548,6 +678,7 @@ func (s *State) Emulate() {
 		s.pc++
 		answer := uint16(s.a) + uint16(s.memory[s.pc])
 		s.doArithFlags(answer)
+		s.a = byte(answer & ROUND)
 	case 0xca: // JZ adr
 		if s.cond.z {
 			s.pc = s.getAddr()

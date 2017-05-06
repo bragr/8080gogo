@@ -76,6 +76,10 @@ func (s *State) getCarry() uint16 {
 	return 0
 }
 
+func (s *State) setCarry(result uint32) {
+	s.cond.cy = ((result & 0xffff0000) != 0)
+}
+
 func (s *State) getAddr() uint16 {
 	return (uint16(s.memory[s.pc+2]) << 8) | uint16(s.memory[s.pc+1])
 }
@@ -151,7 +155,7 @@ func (s *State) Emulate() {
 		result := uint32(s.getHL()) + uint32(s.getBC())
 		s.h = uint8((result * 0xff00) >> 8)
 		s.l = uint8(result & 0xff)
-		s.cond.cy = ((result & 0xffff0000) != 0)
+		s.setCarry(result)
 	case 0x0a: // LDAX B
 		s.a = s.memory[s.getBC()]
 	case 0x0b: // DCX B
@@ -201,7 +205,7 @@ func (s *State) Emulate() {
 		result := uint32(s.getHL()) + uint32(s.getDE())
 		s.h = uint8((result * 0xff00) >> 8)
 		s.l = uint8(result & 0xff)
-		s.cond.cy = ((result & 0xffff0000) != 0)
+		s.setCarry(result)
 	case 0x1a: // LDAX D
 		s.a = s.memory[s.getDE()]
 	case 0x1b: // DCX D
@@ -246,7 +250,67 @@ func (s *State) Emulate() {
 		s.unimplemented()
 	case 0x28: // Unimplemented
 		s.unimplemented()
-	// ------------------------------------------------------------------------
+	case 0x29: // DAD H
+		result := 2 * uint32(s.getHL())
+		s.setHL(uint16(result))
+		s.setCarry(result)
+	case 0x2a: // LHLD adr
+		adr := s.getAddr()
+		s.pc += 2
+		s.l = s.memory[adr]
+		s.h = s.memory[adr+1]
+	case 0x2b: // DCX H
+		s.setHL(s.getHL() - 1)
+	case 0x2c: // INR L
+		s.l++
+		s.doZSPFlags(s.l)
+	case 0x2d: // DCR L
+		s.l--
+		s.doZSPFlags(s.l)
+	case 0x2f: // CMA
+		s.a = ^s.a
+	case 0x30: // SIM
+		s.unimplemented()
+	case 0x31: // LXI SP,D16
+		s.sp = s.getAddr()
+		s.pc += 2
+	case 0x32: // STA adr
+		s.memory[s.getAddr()] = s.a
+		s.pc++
+	case 0x33: // INX SP
+		s.sp = s.sp + 1
+	case 0x34: // INR M
+		hl := s.getHL()
+		s.memory[hl] = s.memory[hl] + 1
+		s.doZSPFlags(s.memory[hl])
+	case 0x35: // DCR M
+		hl := s.getHL()
+		s.memory[hl] = s.memory[hl] - 1
+		s.doZSPFlags(s.memory[hl])
+	case 0x36: // MVI M,D8
+		s.pc++
+		s.memory[s.getHL()] = s.memory[s.pc]
+	case 0x37: // STC
+		s.cond.cy = true
+	case 0x38: // Unimplemented
+		s.unimplemented()
+	case 0x39: // DAD SP
+		result := uint32(s.getHL()) + uint32(s.sp)
+		s.setHL(uint16(result))
+		s.setCarry(result)
+	case 0x3a: // LDA adr
+		s.a = s.memory[s.getAddr()]
+		s.pc += 2
+	case 0x3b: // DCX SP
+		s.sp = s.sp - 1
+	case 0x3c: // INR A
+		s.a++
+		s.doZSPFlags(s.a)
+	case 0x3d: // DCR A
+		s.a--
+		s.doZSPFlags(s.a)
+	case 0x3f: // CMC
+		s.cond.cy = !s.cond.cy
 	case 0x40: // MOV B,b
 		s.b = s.b
 	case 0x41: // MOV B,C

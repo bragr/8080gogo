@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"reflect"
 )
 
 const (
@@ -19,12 +20,14 @@ const (
 var IN_FILE string
 
 type Conditions struct {
-	z   bool
-	s   bool
-	p   bool
-	cy  bool
-	ac  bool
-	pad byte
+	cy   bool
+	pad1 bool
+	p    bool
+	pad2 bool
+	ac   bool
+	pad3 bool
+	z    bool
+	s    bool
 }
 
 type State struct {
@@ -121,6 +124,19 @@ func (s *State) doZSPFlags(result uint8) {
 	s.cond.z = (result == 0)
 	s.cond.s = ((result & uint8(SIGN)) != 0)
 	s.parity(result)
+}
+
+func (s *State) push(high, low uint8) {
+	s.memory[s.sp-1] = high
+	s.memory[s.sp-2] = low
+	s.sp -= 2
+}
+
+func (s *State) pop() (high, low uint8) {
+	low = s.memory[s.sp]
+	high = s.memory[s.sp+1]
+	s.sp += 2
+	return
 }
 
 func (s *State) Emulate() {
@@ -665,7 +681,8 @@ func (s *State) Emulate() {
 		s.pc += 2
 	case 0xbf: // CMP A
 		s.doArithFlags(uint16(s.a) - uint16(s.a))
-	// ------------------------------------------------------------------------
+	case 0xc1: // POP B
+		s.b, s.c = s.pop()
 	case 0xc2: // JNZ adr
 		if !s.cond.z {
 			s.pc = s.getAddr()
@@ -674,6 +691,8 @@ func (s *State) Emulate() {
 		}
 	case 0xc3: // JMP adr
 		s.pc = s.getAddr()
+	case 0xc5: // PUSH B
+		s.push(s.b, s.c)
 	case 0xc6:
 		s.pc++
 		answer := uint16(s.a) + uint16(s.memory[s.pc])
@@ -685,36 +704,67 @@ func (s *State) Emulate() {
 		} else {
 			s.pc += 2
 		}
+	case 0xd1: // POP D
+		s.d, s.e = s.pop()
 	case 0xd2: // JNC adr
 		if !s.cond.cy {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 2
 		}
+	case 0xd5: // PUSH D
+		s.push(s.d, s.e)
 	case 0xda: // JC adr
 		if s.cond.cy {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 2
 		}
+	case 0xe1: // POP H
+		s.h, s.l = s.pop()
 	case 0xe2: // JPO adr
 		if !s.cond.p {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 1
 		}
+	case 0xe5: // PUSH H
+		s.push(s.h, s.l)
 	case 0xea: // JPE adr
 		if s.cond.p {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 2
 		}
+	case 0xf1: // POP PWS
+		var low uint8
+		s.a, low = s.pop()
+		s.cond.cy = (low & 0x01) == 0x01
+		s.cond.pad1 = (low & 0x02) == 0x02
+		s.cond.p = (low & 0x04) == 0x04
+		s.cond.pad2 = (low & 0x08) == 0x08
+		s.cond.ac = (low & 0x10) == 0x10
+		s.cond.pad3 = (low & 0x20) == 0x20
+		s.cond.z = (low & 0x40) == 0x40
+		s.cond.s = (low & 0x80) == 0x80
 	case 0xf2: // JP adr
 		if !s.cond.s {
 			s.pc = s.getAddr()
 		} else {
 			s.pc += 2
 		}
+	case 0xf5: // PUSH PSW
+		var psw uint8 = 0
+		var flag uint8 = 0x01
+		v := reflect.ValueOf(s.cond)
+		for i := 0; i < v.NumField(); i++ {
+			if v.Field(i).Bool() {
+				psw = psw | flag
+			}
+			flag = flag << 1
+		}
+
+		s.push(s.a, psw)
 	case 0xfa: // JM adr
 		if s.cond.s {
 			s.pc = s.getAddr()

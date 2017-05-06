@@ -64,6 +64,11 @@ func (s *State) getHL() uint16 {
 	return (uint16(s.h) << 8) | uint16(s.l)
 }
 
+func (s *State) setHL(hl uint16) {
+	s.l = uint8((hl * 0xff00) >> 8)
+	s.h = uint8(hl & 0xff)
+}
+
 func (s *State) getCarry() uint16 {
 	if s.cond.cy {
 		return 1
@@ -210,6 +215,37 @@ func (s *State) Emulate() {
 	case 0x1e: // MVI E,D8
 		s.pc++
 		s.e = s.memory[s.pc]
+	case 0x1f: // RAR
+		s.cond.cy = (s.a & 0x01) == 0x01
+		bit7 := s.a & 0x80
+		s.a = (s.a >> 1) | bit7
+	case 0x20: // RIM
+		s.unimplemented()
+	case 0x21: // LXI H, D16
+		s.pc++
+		s.l = s.memory[s.pc]
+		s.pc++
+		s.h = s.memory[s.pc]
+	case 0x22: // SHLD adr
+		adr := s.getAddr()
+		s.pc += 2
+		s.memory[adr] = s.l
+		s.memory[adr+1] = s.h
+	case 0x23: // INX H
+		s.setHL(s.getHL() + 1)
+	case 0x24: // INR H
+		s.h++
+		s.doZSPFlags(s.h)
+	case 0x25: // DCR H
+		s.h--
+		s.doZSPFlags(s.h)
+	case 0x26: // MVI H,D8
+		s.pc++
+		s.h = s.memory[s.pc]
+	case 0x27: // DAA
+		s.unimplemented()
+	case 0x28: // Unimplemented
+		s.unimplemented()
 	// ------------------------------------------------------------------------
 	case 0x40: // MOV B,b
 		s.b = s.b
